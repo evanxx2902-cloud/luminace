@@ -2,6 +2,8 @@
 backend/bin/
 backend/*.out
 backend/vendor/
+backend/luminance-api
+backend/luminance-migrate
 
 # Node
 frontend/node_modules/

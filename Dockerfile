@@ -122,13 +122,13 @@ RUN ln -sf /usr/bin/python3.9 /usr/local/bin/python3 && \
     ln -sf /usr/bin/pip3.9    /usr/local/bin/pip3
 
 # ── pgvector — build from source against PG 15 headers ───────────────────
-RUN dnf install -y postgresql15-devel make gcc git && \
+RUN dnf install -y postgresql15-devel make gcc git redhat-rpm-config && \
     git clone --branch v0.7.0 https://github.com/pgvector/pgvector.git /tmp/pgvector && \
     cd /tmp/pgvector && \
       PG_CONFIG=/usr/pgsql-15/bin/pg_config make && \
       PG_CONFIG=/usr/pgsql-15/bin/pg_config make install && \
     rm -rf /tmp/pgvector && \
-    dnf remove -y git make gcc postgresql15-devel && \
+    dnf remove -y git make gcc postgresql15-devel redhat-rpm-config && \
     dnf clean all
 
 # ── Runtime directory layout ──────────────────────────────────────────────

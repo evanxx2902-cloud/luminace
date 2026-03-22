@@ -23,25 +23,13 @@ RUN mkdir -p third_party && \
     go get github.com/go-kratos/kratos/v2@v2.9.2 && \
     cp -r $(go env GOPATH)/pkg/mod/github.com/go-kratos/kratos/v2@v2.9.2/third_party/* . || true
 
-# Copy go.mod/go.sum and download dependencies
-COPY backend/go.mod backend/go.sum ./backend/
+# Copy go.mod/go.sum/Makefile and download dependencies
+COPY backend/go.mod backend/go.sum backend/Makefile ./backend/
 WORKDIR /build/backend
 RUN go mod download
 
-# Create output directory for generated code
-RUN mkdir -p api/luminance/v1
-
 # Generate Go code from proto
-WORKDIR /build
-RUN protoc \
-    --proto_path=./api/proto/v1 \
-    --proto_path=./third_party \
-    --proto_path=/usr/include \
-    --go_out=paths=source_relative:./backend/api/luminance/v1 \
-    --go-grpc_out=paths=source_relative:./backend/api/luminance/v1 \
-    --grpc-gateway_out=paths=source_relative:./backend/api/luminance/v1 \
-    --grpc-gateway_opt=generate_unbound_methods=true \
-    ./api/proto/v1/*.proto
+RUN make proto
 
 # Copy the rest of backend source code
 COPY backend/ ./backend/
@@ -96,7 +84,8 @@ RUN dnf install -y \
       lsof \
       strace \
       vim-minimal \
-      wget && \
+      wget \
+      openssl && \
     dnf clean all
 
 # ── monit (process supervisor) ────────────────────────────────────────────
@@ -189,7 +178,7 @@ RUN ln -s /opt/luminance/scripts/entrypoint.sh /entrypoint.sh
 # ── Persistent data volume ────────────────────────────────────────────────
 VOLUME ["/data"]
 
-EXPOSE 80 2812
+EXPOSE 80 443 2812
 
 # tini as PID 1 for clean signal handling and zombie reaping
 ENTRYPOINT ["/usr/local/bin/tini", "--", "/entrypoint.sh"]

@@ -2,6 +2,8 @@ package jwt
 
 import (
 	"os"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -11,6 +13,12 @@ import (
 const (
 	AccessTokenExpiry  = 2 * time.Hour           // 2 小时
 	RefreshTokenExpiry = 30 * 24 * time.Hour     // 30 天
+	jwtSecretFile      = "/opt/luminance/configs/jwt_secret"
+)
+
+var (
+	secretOnce  sync.Once
+	secretValue string
 )
 
 type Claims struct {
@@ -71,11 +79,22 @@ func ParseToken(tokenStr string) (*Claims, error) {
 	return nil, jwt.ErrSignatureInvalid
 }
 
-// getSecret 从环境变量获取 JWT 密钥
+// getSecret 获取 JWT 密钥（文件 > 环境变量）
 func getSecret() string {
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		return "default-secret-change-in-production" // 仅开发用
-	}
-	return secret
+	secretOnce.Do(func() {
+		// 优先从文件读取
+		if data, err := os.ReadFile(jwtSecretFile); err == nil {
+			secretValue = strings.TrimSpace(string(data))
+			return
+		}
+		// 其次从环境变量读取
+		if secret := os.Getenv("JWT_SECRET"); secret != "" {
+			secretValue = secret
+			return
+		}
+		// 如果都不存在，生成随机密钥并写入文件
+		secretValue = uuid.New().String()
+		_ = os.WriteFile(jwtSecretFile, []byte(secretValue), 0600)
+	})
+	return secretValue
 }

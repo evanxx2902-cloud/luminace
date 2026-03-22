@@ -33,5 +33,44 @@ runuser -u luminance -- /usr/local/bin/pg_ctl -D /data/pg-vector stop || true
 echo "[start] Ensuring Redis runtime directories..."
 mkdir -p /var/run/redis
 
+# 初始化 SSL 证书
+echo "[start] Initializing SSL certificates..."
+mkdir -p /data/ssl
+
+# 如果环境变量提供了证书，写入文件
+if [[ -n "${SSL_CERT_B64:-}" ]]; then
+    echo "$SSL_CERT_B64" | base64 -d > /data/ssl/server.crt
+    echo "[start] SSL certificate written from env SSL_CERT_B64"
+fi
+if [[ -n "${SSL_KEY_B64:-}" ]]; then
+    echo "$SSL_KEY_B64" | base64 -d > /data/ssl/server.key
+    chmod 600 /data/ssl/server.key
+    echo "[start] SSL key written from env SSL_KEY_B64"
+fi
+
+# 如果证书不存在，生成自签名证书
+if [[ ! -f /data/ssl/server.crt ]] || [[ ! -f /data/ssl/server.key ]]; then
+    echo "[start] Generating self-signed SSL certificate..."
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout /data/ssl/server.key \
+        -out /data/ssl/server.crt \
+        -subj "/CN=localhost" \
+        -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+    chmod 600 /data/ssl/server.key
+    echo "[start] Self-signed certificate generated at /data/ssl/"
+fi
+
+# 初始化 JWT 密钥
+echo "[start] Initializing JWT secret..."
+if [[ -n "${JWT_SECRET_B64:-}" ]]; then
+    echo "$JWT_SECRET_B64" | base64 -d > /opt/luminance/configs/jwt_secret
+    chmod 600 /opt/luminance/configs/jwt_secret
+    echo "[start] JWT secret written from env JWT_SECRET_B64"
+elif [[ -n "${JWT_SECRET:-}" ]]; then
+    echo "$JWT_SECRET" > /opt/luminance/configs/jwt_secret
+    chmod 600 /opt/luminance/configs/jwt_secret
+    echo "[start] JWT secret written from env JWT_SECRET"
+fi
+
 echo "[start] Handing off to monit..."
 exec /usr/local/bin/monit -Ic /etc/monit/monitrc

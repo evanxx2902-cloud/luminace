@@ -59,7 +59,7 @@ git commit -m "api: update DocumentService proto and regenerate"
 
 **禁止**创建或使用 `git worktree`。所有开发工作直接在主工作目录中进行，通过普通分支管理并行工作。
 
-## 规则 4：Data 层实现规范
+## 规则 5：Data 层实现规范
 
 ### ORM 选型
 - **必须使用 entgo** 作为 ORM 框架
@@ -95,3 +95,10 @@ go run ./cmd/migrate -command=up -db=vector
 
 # 容器启动时会自动运行迁移（见 scripts/start-services.sh）
 ```
+
+## 规则 6：安全规范
+
+### 禁止弱加密算法
+- **禁止**使用 MD5 算法（无论用于加密、签名还是配置中的声明）
+- **优先**使用 SHA-256、SHA-3、AES-256-GCM、ChaCha20-Poly1305 等现代安全算法
+- 此规则适用于：密码哈希、数字签名、SSL/TLS 配置、文件校验等所有场景

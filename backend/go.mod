@@ -1,4 +1,4 @@
-module github.com/luminance/backend
+module luminance/backend
 
 go 1.24.0
 
@@ -25,6 +25,7 @@ require (
 	github.com/go-playground/form/v4 v4.2.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.18.1 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect

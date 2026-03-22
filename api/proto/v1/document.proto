@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package luminance.v1;
 
-option go_package = "github.com/luminance/backend/api/luminance/v1;v1";
+option go_package = "luminance/backend/api/luminance/v1;v1";
 
 import "google/protobuf/timestamp.proto";
 

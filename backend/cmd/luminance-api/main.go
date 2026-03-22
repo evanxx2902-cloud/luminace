@@ -2,33 +2,29 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"os"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	_ "github.com/lib/pq"
 
-	"github.com/luminance/backend/internal/biz"
-	"github.com/luminance/backend/internal/data"
-	"github.com/luminance/backend/internal/server"
-	"github.com/luminance/backend/internal/service"
+	"luminance/backend/ent"
+	"luminance/backend/internal/biz"
+	"luminance/backend/internal/data"
+	"luminance/backend/internal/server"
+	"luminance/backend/internal/service"
 )
 
 func main() {
 	logger := log.NewStdLogger(os.Stdout)
 	helper := log.NewHelper(logger)
 
-	// 初始化数据库连接
-	db, err := sql.Open("postgres", getDatabaseURL())
+	// 初始化数据库连接（ent client）
+	db, err := ent.Open("postgres", getDatabaseURL())
 	if err != nil {
 		helper.Fatalf("failed to open database: %v", err)
 	}
 	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		helper.Fatalf("failed to ping database: %v", err)
-	}
 
 	// 初始化 Redis 客户端
 	redisClient := data.NewRedisClient(getRedisAddr())

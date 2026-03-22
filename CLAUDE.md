@@ -40,7 +40,22 @@ git add api/ backend/api/
 git commit -m "api: update DocumentService proto and regenerate"
 ```
 
-## 规则 3：禁止使用 Git Worktree
+## 规则 3：Go 模块命名规范
+
+### 模块名
+- **go.mod 模块名必须使用**：`luminance/backend`（不得使用 `github.com/luminance/backend`）
+- **所有 Go import 路径**均以 `luminance/backend/` 为前缀，例如：
+  ```go
+  import "luminance/backend/internal/biz"
+  import "luminance/backend/ent"
+  ```
+- **proto 文件的 `go_package`** 选项也必须使用本地模块名：
+  ```protobuf
+  option go_package = "luminance/backend/api/luminance/v1;v1";
+  ```
+- **禁止**在任何文件中使用 `github.com/luminance` 前缀引用本项目内部包
+
+## 规则 4：禁止使用 Git Worktree
 
 **禁止**创建或使用 `git worktree`。所有开发工作直接在主工作目录中进行，通过普通分支管理并行工作。
 

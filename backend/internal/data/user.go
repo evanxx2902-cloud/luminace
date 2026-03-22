@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/luminance/backend/ent"
-	"github.com/luminance/backend/ent/user"
-	"github.com/luminance/backend/internal/biz"
-	"github.com/luminance/backend/pkg/crypto"
+	"luminance/backend/ent"
+	"luminance/backend/ent/user"
+	"luminance/backend/internal/biz"
+	"luminance/backend/pkg/crypto"
 )
 
 // userRepo 用户仓库实现

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	v1 "github.com/luminance/backend/api/luminance/v1"
-	"github.com/luminance/backend/internal/biz"
+	v1 "luminance/backend/api/luminance/v1"
+	"luminance/backend/internal/biz"
 )
 
 // UserService 用户服务实现

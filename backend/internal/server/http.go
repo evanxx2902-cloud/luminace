@@ -9,8 +9,8 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 
-	"github.com/luminance/backend/internal/service"
-	"github.com/luminance/backend/pkg/jwt"
+	"luminance/backend/internal/service"
+	"luminance/backend/pkg/jwt"
 )
 
 // contextKey 用于存储在 context 中的键

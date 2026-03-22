@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/luminance/backend/pkg/jwt"
+	"luminance/backend/pkg/jwt"
 )
 
 // 常量定义

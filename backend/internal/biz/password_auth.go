@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/luminance/backend/pkg/crypto"
+	"luminance/backend/pkg/crypto"
 )
 
 // PasswordAuthenticator 用户名密码认证器

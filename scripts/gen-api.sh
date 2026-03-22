@@ -52,6 +52,23 @@ protoc \
 
 echo "Go code generated at: ${BACKEND_API_DIR}"
 
+# 生成 gRPC-Gateway 代码
+if command -v protoc-gen-grpc-gateway &> /dev/null; then
+    echo ""
+    echo "=== Generating gRPC-Gateway code ==="
+    protoc \
+        --proto_path="${PROTO_DIR}" \
+        --proto_path="${KRATOS_THIRD_PARTY}" \
+        --grpc-gateway_out=paths=source_relative:"${BACKEND_API_DIR}" \
+        --grpc-gateway_opt=generate_unbound_methods=true \
+        "${PROTO_DIR}"/*.proto
+    echo "Gateway code generated at: ${BACKEND_API_DIR}"
+else
+    echo ""
+    echo "Skipping gRPC-Gateway generation (protoc-gen-grpc-gateway not installed)"
+    echo "To install: go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest"
+fi
+
 # 生成 OpenAPI (使用 grpc-gateway 的 protoc-gen-openapiv2)
 if command -v protoc-gen-openapiv2 &> /dev/null; then
     echo ""

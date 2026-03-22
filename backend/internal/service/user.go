@@ -167,12 +167,18 @@ func getClientIP(ctx context.Context) string {
 
 // getUserIDFromContext 从 context 获取用户 ID
 func getUserIDFromContext(ctx context.Context) (int32, error) {
-	// 实际应从 JWT claims 中获取
-	return 0, fmt.Errorf("unauthorized")
+	userID, ok := ctx.Value("user_id").(int32)
+	if !ok {
+		return 0, fmt.Errorf("unauthorized")
+	}
+	return userID, nil
 }
 
 // getTokenFromContext 从 context 获取 token
 func getTokenFromContext(ctx context.Context) (string, error) {
-	// 实际应从 HTTP header 或 gRPC metadata 获取
-	return "", fmt.Errorf("no token")
+	token, ok := ctx.Value("token").(string)
+	if !ok {
+		return "", fmt.Errorf("no token")
+	}
+	return token, nil
 }

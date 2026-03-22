@@ -70,18 +70,17 @@ RUN npm run build
 # =============================================================================
 FROM almalinux:8
 
-# Disable AlmaLinux default repos and enable vault repos for EOL handling if needed
-# Install EPEL first for additional packages
-RUN dnf install -y epel-release && \
+# Enable PowerTools (CRB) for additional packages
+RUN dnf install -y 'dnf-command(config-manager)' && \
     dnf config-manager --set-enabled powertools && \
     dnf clean all
 
 # ── PostgreSQL 15 via official PGDG yum repo ──────────────────────────────
 # PGDG provides PG 15 for EL8.
+# Note: Skip EPEL for now due to network issues in container
 RUN dnf install -y \
       https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
     dnf install -y \
-      tini \
       monit \
       nginx \
       postgresql15-server \
@@ -90,6 +89,12 @@ RUN dnf install -y \
       curl \
       redis && \
     dnf clean all
+
+# ── tini (PID 1 init system) ─────────────────────────────────────────────
+# tini is not in AlmaLinux base repos, install from GitHub release
+RUN curl -fsSL -o /usr/local/bin/tini \
+      https://github.com/krallin/tini/releases/download/v0.19.0/tini-amd64 && \
+    chmod +x /usr/local/bin/tini
 
 # Symlink PG 15 binaries to a PATH location used by scripts and monit
 RUN ln -s /usr/pgsql-15/bin/initdb   /usr/local/bin/initdb   && \
@@ -161,4 +166,4 @@ VOLUME ["/data"]
 EXPOSE 80 2812
 
 # tini as PID 1 for clean signal handling and zombie reaping
-ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/tini", "--", "/entrypoint.sh"]

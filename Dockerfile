@@ -88,7 +88,15 @@ RUN dnf install -y \
       sudo \
       curl \
       redis \
-      libnsl && \
+      libnsl \
+      procps-ng \
+      psmisc \
+      net-tools \
+      iproute \
+      lsof \
+      strace \
+      vim-minimal \
+      wget && \
     dnf clean all
 
 # ── monit (process supervisor) ────────────────────────────────────────────
@@ -123,8 +131,8 @@ RUN ln -sf /usr/bin/python3.9 /usr/local/bin/python3 && \
 RUN dnf install -y postgresql15-devel make gcc git redhat-rpm-config && \
     git clone --branch v0.7.0 https://github.com/pgvector/pgvector.git /tmp/pgvector && \
     cd /tmp/pgvector && \
-      PG_CONFIG=/usr/pgsql-15/bin/pg_config make && \
-      PG_CONFIG=/usr/pgsql-15/bin/pg_config make install && \
+      PG_CONFIG=/usr/pgsql-15/bin/pg_config make OPTFLAGS="" && \
+      PG_CONFIG=/usr/pgsql-15/bin/pg_config make install OPTFLAGS="" && \
     rm -rf /tmp/pgvector && \
     dnf remove -y git make gcc postgresql15-devel redhat-rpm-config && \
     dnf clean all

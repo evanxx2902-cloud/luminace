@@ -15,7 +15,12 @@ init_instance() {
   if [ ! -f "${data_dir}/PG_VERSION" ]; then
     echo "[init-pg] Initializing PostgreSQL 15 at ${data_dir} (port ${port})"
     chown -R luminance:luminance "${data_dir}"
-    runuser -u luminance -- initdb -D "${data_dir}" --username="${PG_USER}" --pwfile=<(echo "${PG_PASS}")
+    local pwfile
+    pwfile=$(mktemp)
+    echo "${PG_PASS}" > "${pwfile}"
+    chown luminance:luminance "${pwfile}"
+    runuser -u luminance -- initdb -D "${data_dir}" --username="${PG_USER}" --pwfile="${pwfile}"
+    rm -f "${pwfile}"
 
     # Set the correct port (default in postgresql.conf is #port = 5432)
     runuser -u luminance -- sed -i "s/^#port = 5432/port = ${port}/" "${data_dir}/postgresql.conf"

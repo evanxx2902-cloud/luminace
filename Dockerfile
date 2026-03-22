@@ -171,6 +171,9 @@ COPY backend/migrations/          /opt/luminance/backend/migrations/
 RUN chmod +x /opt/luminance/scripts/*.sh && \
     chmod 600 /etc/monit/monitrc
 
+# Create symlink for monitrc so monit can find config without -c flag
+RUN ln -sf /etc/monit/monitrc /etc/monitrc
+
 # Convenience symlink so entrypoint is at a clean path
 RUN ln -s /opt/luminance/scripts/entrypoint.sh /entrypoint.sh
 

@@ -15,26 +15,27 @@ init_instance() {
   if [ ! -f "${data_dir}/PG_VERSION" ]; then
     echo "[init-pg] Initializing PostgreSQL 15 at ${data_dir} (port ${port})"
     chown -R luminance:luminance "${data_dir}"
-    su - luminance -c "initdb -D '${data_dir}' --username='${PG_USER}' --pwfile=<(echo '${PG_PASS}')"
+    runuser -u luminance -- initdb -D "${data_dir}" --username="${PG_USER}" --pwfile=<(echo "${PG_PASS}")
 
     # Set the correct port (default in postgresql.conf is #port = 5432)
-    su - luminance -c "sed -i 's/^#port = 5432/port = ${port}/' '${data_dir}/postgresql.conf'"
+    runuser -u luminance -- sed -i "s/^#port = 5432/port = ${port}/" "${data_dir}/postgresql.conf"
 
     # Start temporarily for DB/extension setup
-    su - luminance -c "pg_ctl -D '${data_dir}' -l '/data/log/pg-init-${port}.log' start"
+    runuser -u luminance -- pg_ctl -D "${data_dir}" -l "/data/log/pg-init-${port}.log" start
     sleep 3
 
     # Create application database
-    su - luminance -c "PGPASSWORD='${PG_PASS}' psql -U '${PG_USER}' -p '${port}' -c 'CREATE DATABASE ${dbname};'" || true
+    runuser -u luminance -- env PGPASSWORD="${PG_PASS}" psql -U "${PG_USER}" -p "${port}" -c "CREATE DATABASE ${dbname};" || true
 
     # Install requested extensions into the new database
     if [ -n "${extensions}" ]; then
       for ext in ${extensions}; do
-        su - luminance -c "PGPASSWORD='${PG_PASS}' psql -U '${PG_USER}' -p '${port}' -d '${dbname}' -c 'CREATE EXTENSION IF NOT EXISTS ${ext};'" || true
+        runuser -u luminance -- env PGPASSWORD="${PG_PASS}" psql -U "${PG_USER}" -p "${port}" -d "${dbname}" \
+          -c "CREATE EXTENSION IF NOT EXISTS ${ext};" || true
       done
     fi
 
-    su - luminance -c "pg_ctl -D '${data_dir}' stop"
+    runuser -u luminance -- pg_ctl -D "${data_dir}" stop
     echo "[init-pg] Instance at ${data_dir} ready."
   else
     echo "[init-pg] Instance at ${data_dir} already initialized — skipping."

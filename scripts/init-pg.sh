@@ -42,6 +42,7 @@ init_instance() {
 }
 
 mkdir -p /data/pg-business /data/pg-vector /data/log
+chown -R luminance:luminance /data/log /data/pg-business /data/pg-vector
 
 # Business DB  — port 5432, no extensions
 init_instance /data/pg-business 5432 luminance

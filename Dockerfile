@@ -152,7 +152,10 @@ COPY --from=frontend-builder /build/frontend/dist/             /opt/luminance/we
 
 # ── Python AI service ─────────────────────────────────────────────────────
 COPY ai/requirements.txt /opt/luminance/ai/
-RUN pip3 install --no-cache-dir -r /opt/luminance/ai/requirements.txt
+RUN dnf install -y gcc-c++ python3-devel && \
+    pip3 install --no-cache-dir -r /opt/luminance/ai/requirements.txt && \
+    dnf remove -y gcc-c++ python3-devel && \
+    dnf clean all
 COPY ai/ /opt/luminance/ai/
 
 # ── Config and script files ───────────────────────────────────────────────

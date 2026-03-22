@@ -32,9 +32,8 @@ RUN go mod download
 RUN make proto
 
 # Copy the rest of backend source code
-COPY backend/ ./backend/
+COPY backend/ .
 
-WORKDIR /build/backend
 RUN make generate
 RUN make build
 

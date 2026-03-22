@@ -3,10 +3,30 @@
 # =============================================================================
 FROM golang:1.24-alpine AS go-builder
 
+# Install protoc and dependencies for code generation
+RUN apk add --no-cache protobuf git
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+WORKDIR /build
+
+# Copy proto files and generate Go code
+COPY api/ ./api/
+COPY scripts/gen-api.sh ./scripts/
+COPY backend/go.mod backend/go.sum ./backend/
+
+# Create directory for generated code and generate
+RUN mkdir -p backend/api/luminance/v1
 WORKDIR /build/backend
-COPY backend/go.mod backend/go.sum ./
 RUN go mod download
-COPY backend/ .
+
+WORKDIR /build
+ENV PATH="$PATH:$(go env GOPATH)/bin"
+RUN chmod +x scripts/gen-api.sh && ./scripts/gen-api.sh || true
+
+# Now copy the rest of backend and build
+COPY backend/ ./backend/
+WORKDIR /build/backend
 RUN CGO_ENABLED=0 GOOS=linux go build -o luminance-api ./cmd/luminance-api
 RUN CGO_ENABLED=0 GOOS=linux go build -o luminance-migrate ./cmd/migrate
 

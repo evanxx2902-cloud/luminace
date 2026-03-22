@@ -88,7 +88,8 @@ RUN dnf install -y \
       postgresql15-contrib \
       sudo \
       curl \
-      redis && \
+      redis \
+      libnsl && \
     dnf clean all
 
 # ── monit (process supervisor) ────────────────────────────────────────────

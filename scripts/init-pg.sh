@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Initialize both PostgreSQL 15 instances on first boot.
-# Idempotent: skips initialization if data directory already exists.
+# Idempotent: skips initdb if data directory already exists,
+# but always ensures the application database and extensions exist.
 set -euo pipefail
 
 PG_USER="luminance"
@@ -24,27 +25,27 @@ init_instance() {
 
     # Set the correct port (default in postgresql.conf is #port = 5432)
     runuser -u luminance -- sed -i "s/^#port = 5432/port = ${port}/" "${data_dir}/postgresql.conf"
-
-    # Start temporarily for DB/extension setup
-    runuser -u luminance -- pg_ctl -D "${data_dir}" -l "/data/log/pg-init-${port}.log" start
-    sleep 3
-
-    # Create application database
-    runuser -u luminance -- env PGPASSWORD="${PG_PASS}" psql -U "${PG_USER}" -p "${port}" -d postgres -c "CREATE DATABASE ${dbname};" || true
-
-    # Install requested extensions into the new database
-    if [ -n "${extensions}" ]; then
-      for ext in ${extensions}; do
-        runuser -u luminance -- env PGPASSWORD="${PG_PASS}" psql -U "${PG_USER}" -p "${port}" -d "${dbname}" \
-          -c "CREATE EXTENSION IF NOT EXISTS ${ext};" || true
-      done
-    fi
-
-    runuser -u luminance -- pg_ctl -D "${data_dir}" stop
-    echo "[init-pg] Instance at ${data_dir} ready."
   else
-    echo "[init-pg] Instance at ${data_dir} already initialized — skipping."
+    echo "[init-pg] Instance at ${data_dir} already initialized — ensuring database exists."
   fi
+
+  # Always start temporarily to ensure database and extensions exist
+  runuser -u luminance -- pg_ctl -D "${data_dir}" -l "/data/log/pg-init-${port}.log" -w -t 30 start
+
+  runuser -u luminance -- env PGPASSWORD="${PG_PASS}" psql -U "${PG_USER}" -p "${port}" -d postgres \
+    -c "SELECT 1 FROM pg_database WHERE datname = '${dbname}'" | grep -q 1 || \
+    runuser -u luminance -- env PGPASSWORD="${PG_PASS}" psql -U "${PG_USER}" -p "${port}" -d postgres \
+      -c "CREATE DATABASE ${dbname};"
+
+  if [ -n "${extensions}" ]; then
+    for ext in ${extensions}; do
+      runuser -u luminance -- env PGPASSWORD="${PG_PASS}" psql -U "${PG_USER}" -p "${port}" -d "${dbname}" \
+        -c "CREATE EXTENSION IF NOT EXISTS ${ext};" || true
+    done
+  fi
+
+  runuser -u luminance -- pg_ctl -D "${data_dir}" -w -t 30 stop
+  echo "[init-pg] Instance at ${data_dir} ready."
 }
 
 mkdir -p /data/pg-business /data/pg-vector /data/log

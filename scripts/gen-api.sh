@@ -9,6 +9,9 @@ PROTO_DIR="${PROJECT_ROOT}/api/proto/v1"
 OPENAPI_DIR="${PROJECT_ROOT}/api/openapi/v1"
 BACKEND_API_DIR="${PROJECT_ROOT}/backend/api/luminance/v1"
 
+# Kratos third_party proto 路径（包含 google/api/annotations.proto）
+KRATOS_THIRD_PARTY="$(go env GOPATH)/pkg/mod/github.com/go-kratos/kratos/v2@v2.9.2/third_party"
+
 echo "=== Generating API code ==="
 echo "Proto dir: ${PROTO_DIR}"
 
@@ -42,6 +45,7 @@ cd "${PROJECT_ROOT}/backend"
 
 protoc \
     --proto_path="${PROTO_DIR}" \
+    --proto_path="${KRATOS_THIRD_PARTY}" \
     --go_out=paths=source_relative:"${BACKEND_API_DIR}" \
     --go-grpc_out=paths=source_relative:"${BACKEND_API_DIR}" \
     "${PROTO_DIR}"/*.proto
@@ -54,6 +58,7 @@ if command -v protoc-gen-openapiv2 &> /dev/null; then
     echo "=== Generating OpenAPI spec ==="
     protoc \
         --proto_path="${PROTO_DIR}" \
+        --proto_path="${KRATOS_THIRD_PARTY}" \
         --openapiv2_out="${OPENAPI_DIR}" \
         --openapiv2_opt=logtostderr=true \
         "${PROTO_DIR}"/*.proto

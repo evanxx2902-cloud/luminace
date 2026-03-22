@@ -3,6 +3,8 @@
 set -euo pipefail
 
 echo "[start] Initializing persistent data directories..."
+mkdir -p /var/run/postgresql
+chown luminance:luminance /var/run/postgresql
 bash /opt/luminance/scripts/init-pg.sh
 
 # 启动临时 PostgreSQL 实例用于迁移（如果 monit 还没启动 PG）

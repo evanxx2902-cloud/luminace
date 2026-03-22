@@ -131,7 +131,9 @@ RUN dnf install -y postgresql15-devel make gcc git redhat-rpm-config && \
 
 # ── Create luminance user for PostgreSQL ─────────────────────────────────
 RUN groupadd -r luminance && \
-    useradd -r -g luminance -d /data -s /bin/bash luminance
+    useradd -r -g luminance -d /data -s /bin/bash luminance && \
+    mkdir -p /var/run/postgresql && \
+    chown luminance:luminance /var/run/postgresql
 
 # ── Runtime directory layout ──────────────────────────────────────────────
 RUN mkdir -p \

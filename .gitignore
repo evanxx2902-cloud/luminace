@@ -16,3 +16,4 @@ ai/.venv/
 .env
 *.log
 .DS_Store
+.worktrees/

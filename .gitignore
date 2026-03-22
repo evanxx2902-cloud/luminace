@@ -17,3 +17,11 @@ ai/.venv/
 *.log
 .DS_Store
 .worktrees/
+
+# Generated protobuf code
+backend/api/**/*.pb.go
+backend/api/**/*.pb.gw.go
+backend/api/**/*_grpc.pb.go
+
+# OpenAPI generated specs
+api/openapi/**/*.swagger.json
